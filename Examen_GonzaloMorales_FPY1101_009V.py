@@ -1,19 +1,3 @@
-planes = {
-    "F001": ["Plan Basico", "mensual", 1, False, False, "Libre"],
-    "F002": ["Plan Full", "mensual", 1, True, True, "Libre"],
-    "F003": ["Plan Estudiante", "trimestral", 3, False, True, "Tarde"],
-    "F004": ["Plan Senior", "trimestral", 3, True, False, "Mañana"],
-    "F005": ["Plan Anual Pro", "anual", 12, True, True, "Libre"],
-    "F006": ["Plan Nocturno", "mensual", 1, False, True, "Noche"]
-}
-inscripciones = {
-    "F001": [14990, 30],
-    "F002": [22900, 10],
-    "F003": [39990, 0],
-    "F004": [35990, 6],
-    "F005": [159990, 2],
-    "F006": [18990, 15]
-}
 
 #FUNCIONES VALIDACIÓN
 def val_len(entrada):
@@ -87,18 +71,18 @@ def cupos_tipos(tipo_plan, planes, inscripciones):
         for plan in planes:
             if planes[plan][1] == tipo_plan:
                 cupos_totales += inscripciones[plan][1]
-        print(f"El total de cupos disponibles para el tipo de plan {tipo_plan} es: {cupos_totales}")
+        print(f"El total de cupos disponibles es: {cupos_totales}")
     else:
         print("Tipo de plan inválido. Por favor, ingresa mensual, trimestral o anual.")
 
 def busqueda_precio(p_min, p_max, planes, inscripciones):
     planes_precio = []
-    for inscripcion in inscripciones:
-        if inscripciones[inscripcion][0] >= p_min and inscripciones[inscripcion][0] <= p_max and inscripciones[inscripcion][1] != 0:
-            for plan in planes:
-                if inscripcion == plan:
-                    planes_agregados = (f"{planes[plan][0]}-{plan}")
-                    planes_precio.append((planes_agregados))
+    for codigo in inscripciones:
+        precio = inscripciones[codigo][0]
+        cupos = inscripciones[codigo][1]
+        if p_min <= precio <= p_max and cupos != 0:
+            nombre_plan = planes[codigo][0]
+            planes_precio.append(f"{nombre_plan}-{codigo}")
 
     if len(planes_precio) == 0:
         print("No hay planes en ese rango de precios.")
@@ -115,9 +99,11 @@ def actualizar_precio(codigo, nuevo_precio, planes, inscripciones):
     return False
 
 def agregar_plan(codigo, nombre, tipo, duracion, acceso_piscina, incluye_clases, horario, precio, cupos, planes, inscripciones):
+    codigo = codigo.upper().strip()
+
     if buscar_codigo(codigo, planes) or buscar_codigo(codigo, inscripciones):
         return False
- 
+
     planes[codigo] = [nombre, tipo.lower(), int(duracion),
                        acceso_piscina.lower() == "s",
                        incluye_clases.lower() == "s",
@@ -155,6 +141,23 @@ def leer_opcion():
         return None
 
 def main():
+    planes = {
+    "F001": ["Plan Basico", "mensual", 1, False, False, "Libre"],
+    "F002": ["Plan Full", "mensual", 1, True, True, "Libre"],
+    "F003": ["Plan Estudiante", "trimestral", 3, False, True, "Tarde"],
+    "F004": ["Plan Senior", "trimestral", 3, True, False, "Mañana"],
+    "F005": ["Plan Anual Pro", "anual", 12, True, True, "Libre"],
+    "F006": ["Plan Nocturno", "mensual", 1, False, True, "Noche"]
+}
+    inscripciones = {
+    "F001": [14990, 30],
+    "F002": [22900, 10],
+    "F003": [39990, 0],
+    "F004": [35990, 6],
+    "F005": [159990, 2],
+    "F006": [18990, 15]
+}
+
     while True:
         mostrar_menú()
         op = leer_opcion()
@@ -165,12 +168,12 @@ def main():
             while True:
                 p_min = num_positivo("Ingrese el valor mínimo de búsqueda: ")
                 if p_min is False:
-                    print("Debe ingresar valores válidos para el rango de precios.")
+                    print("Debe ingresar valores enteros.")
                     continue
 
                 p_max = num_positivo("Ingrese el valor máximo de búsqueda: ")
                 if p_max is False:
-                    print("Debe ingresar valores válidos para el rango de precios.")
+                    print("Debe ingresar valores enteros.")
                     continue
 
                 if p_min > p_max:
@@ -182,17 +185,17 @@ def main():
         elif op == 3:
             while True:
                 codigo = input("Ingrese código del plan: ")
-                try:
-                    nuevo_precio = int(input("Ingrese nuevo precio: "))
-                except ValueError:
-                    print("Debe ingresar un valor entero para el precio")
+                nuevo_precio_str = input("Ingrese nuevo precio: ")
+                if not val_precio(nuevo_precio_str):
+                    print("El precio debe ser un número entero mayor que cero")
                     continue
- 
+                nuevo_precio = int(nuevo_precio_str)
+
                 if actualizar_precio(codigo, nuevo_precio, planes, inscripciones):
                     print("Precio actualizado")
                 else:
                     print("El código no existe")
- 
+
                 repetir = input("¿Desea actualizar otro precio (s/n)?: ")
                 if repetir.lower() != "s":
                     break
@@ -242,7 +245,7 @@ def main():
         elif op == 6:
             break
         else:
-            print("Ingresa un valor dentro del rango 1-6. Intente nuevamente.")
+            print("Debe seleccionar una opción válida.")
 
 main()
 print("Programa finalizado.")
